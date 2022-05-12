@@ -60,4 +60,15 @@ const productSchema = mongoose.Schema({
 
 
 
+//this will also give you id without the _ like mongo does (you get `id` and `_id`)
+productSchema.virtual('id').get(function() {
+    return this._id.toHexString();
+});
+
+productSchema.set('toJSON', {
+    virtuals: true
+});
+
+
+
 module.exports = mongoose.model('Product', productSchema);

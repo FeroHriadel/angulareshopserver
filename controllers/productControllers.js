@@ -144,3 +144,22 @@ exports.getFeaturedProducts = async (req, res) => {
         res.status(500).json({error: 'Server error'}); 
     }
 }
+
+
+
+exports.getProductsByCategory = async (req, res) => {
+    try {
+        let filter = {};
+        if (req.query.categories) {
+            filter = {category: req.query.categories.split(',')}; //[9dj9ee9, d099kde, 0eomkc9, ...]
+        }
+        const products = await Product.find(filter);
+        if (!products) return res.status(404).json({error: 'No categories found'});
+
+        res.json({products});
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: 'Server error'}); 
+    }
+}
