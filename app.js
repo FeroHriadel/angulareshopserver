@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const categoryRoutes = require('./routes/categoryRoutes');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 
 
@@ -27,6 +28,7 @@ app.use(cors());
 app.options('*', cors());
 app.use(express.json());
 app.use(morgan('tiny'));
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 
 
 
@@ -35,6 +37,7 @@ const api = process.env.API_URL;
 app.use(`${api}/products`, productRoutes);
 app.use(`${api}/categories`, categoryRoutes);
 app.use(`${api}/users`, userRoutes);
+app.use(`${api}/orders`, orderRoutes);
 
 
 

@@ -8,11 +8,16 @@ exports.createProduct = async (req, res) => {
         const category = await Category.findById(req.body.category);
         if (!category) return res.status(400).json({error: 'Bad category'});
 
+        const file = req.file;
+        if (!file) return res.status(400).json({error: 'Image is required'});
+        const fileName = req.file.filename;
+        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+
         let product = new Product({
             name: req.body.name,
             description: req.body.description,
             richDescription: req.body.richDescription,
-            image: req.body.image,
+            image: `${basePath}${fileName}`,
             brand: req.body.brand,
             price: req.body.price,
             category: req.body.category,
@@ -27,6 +32,31 @@ exports.createProduct = async (req, res) => {
 
         res.status(201).json({product});
 
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: 'Server error'});
+    }
+}
+
+
+
+exports.uploadProductGallery = async (req, res) => {
+    try {
+        const files = req.files;
+        if (!files) return res.status(400).json({error: 'Images are required'});
+
+        const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+        const imagesPaths = [];
+        files.map(file => {
+            imagesPaths.push(`${basePath}${file.filename}`);
+        });
+
+        const productId = req.params.productId;
+        const updatedProduct = await Product.findByIdAndUpdate(productId, {images: imagesPaths}, {new: true});
+        if (!updatedProduct) return res.status(500).json({error: 'Gallery upload failed'});
+
+        res.json({product: updatedProduct});
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({error: 'Server error'});
@@ -66,17 +96,35 @@ exports.getProduct = async (req, res) => {
 
 exports.updateProduct = async (req, res) => {
     try {
+        //check category
         const category = await Category.findById(req.body.category);
         if (!category) return res.status(400).json({error: 'Bad Category'});
 
+        //get product
         const { productId } = req.params;
+        const product = await Product.findById(req.params.productId);
+        if (!product) return res.status(404).json({error: 'Product not found'});
+
+        //check for image
+        const file = req.file;
+        let imagepath;
+
+        if (file) {
+            const fileName = file.fielname;
+            const basePath = `${req.protocol}://${req.get('host')}/public/uploads/`;
+            imagepath = `${basePath}${fileName}`;
+        } else {
+            imagepath = product.image;
+        }
+
+        //update product
         let updatedProduct = await Product.findByIdAndUpdate(
             productId, 
             {
                 name: req.body.name,
                 description: req.body.description,
                 richDescription: req.body.richDescription,
-                image: req.body.image,
+                image: imagepath,
                 brand: req.body.brand,
                 price: req.body.price,
                 category: req.body.category,

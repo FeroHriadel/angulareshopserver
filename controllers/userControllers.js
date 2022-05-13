@@ -47,7 +47,7 @@ exports.login = async (req, res) => {
         if (!user) return res.status(404).json({error: 'User not found'});
 
         if (user && bcrypt.compareSync(password, user.passwordHash)) {
-            const token = jwt.sign({userId: user._id}, process.env.JWT_SECRET);
+            const token = jwt.sign({userId: user._id, isAdmin: user.isAdmin}, process.env.JWT_SECRET);
             res.json({user: user.email, token});
         } else {
             res.status(401).json({error: 'Invalid credentials'});
@@ -125,6 +125,21 @@ exports.updateUser = async (req, res) => {
         updatedUser.passwordHash = undefined;
 
         res.json({user: updatedUser});
+        
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error: 'Server error'});
+    }
+}
+
+
+
+exports.getUserCount = async (req, res, next) => {
+    try {
+        const userCount = await User.countDocuments();
+        if (!userCount) return res.status(500).json({error: 'Counting failed'});
+
+        res.json({userCount});
         
     } catch (error) {
         console.log(error);
